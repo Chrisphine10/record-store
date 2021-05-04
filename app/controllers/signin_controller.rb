@@ -6,7 +6,7 @@ class SigninController < ApplicationController
     
     if user.authenticate(params[:password])
       payload = { user_id: user.id }
-      session = JWTSessions.session.new(payload: payload, refresh_by_access_allowed: true)
+      session = JWTSessions::Session.new(payload: payload, refresh_by_access_allowed: true)
       tokens = session.login
 
       response.set_cookie(JWTSessions.access_cookie,
@@ -14,14 +14,14 @@ class SigninController < ApplicationController
         httponly: true,
         secure: Rails.env.production?)
 
-      render json: { csrf: tokens[:csrf]}
+      render json: { csrf: tokens[:csrf] }
     else
       not_found
     end
   end
 
   def destroy
-    session = JWTSessions.session.new(payload: payload)
+    session = JWTSessions::Session.new(payload: payload)
     session.flush_by_access_payload
     render json: :ok
   end
@@ -29,6 +29,6 @@ class SigninController < ApplicationController
 
   private
     def not_found
-      render json: "Can't find email/password combination" , status: :unauthorized
+      render json: { error: "Can't find email/password combination" }, status: :unauthorized
     end
 end
